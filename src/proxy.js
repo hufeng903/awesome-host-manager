@@ -97,22 +97,9 @@ export function setProxy(content) {
         return "SYSTEM";
     }
   }`
-  // let pacContent = `function FindProxyForURL(url, host) {
-  //       if (shExpMatch(url, "http:*") || shExpMatch(url, "https:*")) {
-  //           if (isPlainHostName(host) && host == 'localhost') {
-  //               return "DIRECT";
-  //           ${result.hostContent}
-  //           } else {
-  //               return "${result.proxyContent} ${defaultMethod}";
-  //           }
-  //       } else {
-  //           return "SYSTEM";
-  //       }
-  //   }`
-
 
   console.log('proxy to:\n' + pacContent)
-  if (typeof chrome.proxy === 'undefined') return false
+  if (typeof chrome === 'undefined' || typeof chrome.proxy === 'undefined') return false
   if (result.hostContent !== '' || result.proxyContent !== '') {
     clearProxy(function() {
       chrome.proxy.settings.set(
@@ -125,7 +112,11 @@ export function setProxy(content) {
           },
           scope: 'regular'
         },
-        function() {}
+        function() {
+          if (chrome.runtime.lastError) {
+            console.error('Proxy setting error:', chrome.runtime.lastError)
+          }
+        }
       )
     })
   } else {
@@ -135,11 +126,16 @@ export function setProxy(content) {
 export function clearProxy(cb) {
   cb = cb || function () {}
   console.log('clear.')
-  if (typeof chrome.proxy === 'undefined') return false
+  if (typeof chrome === 'undefined' || typeof chrome.proxy === 'undefined') return false
   chrome.proxy.settings.set({
       value: { mode: 'system' },
       scope: 'regular'
     },
-    cb
+    function() {
+      if (chrome.runtime.lastError) {
+        console.error('Clear proxy error:', chrome.runtime.lastError)
+      }
+      cb()
+    }
   )
 }

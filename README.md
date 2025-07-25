@@ -15,8 +15,29 @@
 
 ## Install
 
-- [Chrome 应用商店](https://chrome.google.com/webstore/detail/awesome-host-manager/pikaoeecieigblebdddckmlegonlogha?hl=zh-CN)（建议）
-- [下载 .crx 文件](https://raw.githubusercontent.com/keelii/awesome-host-manager/master/awesome-host-manager.crx) chrome 中打开 chrome://extensions/ 将.crx 文件托进安装即可
+### 最新版本（支持 Chrome 88+）
+
+由于 Chrome 已停止支持 Manifest V2，请使用以下方式安装：
+
+1. **开发者模式安装**（推荐）：
+   - 打开 `chrome://extensions/`
+   - 开启"开发者模式"
+   - 点击"加载已解压的扩展程序"
+   - 选择项目中的 `awesome-host-manager` 文件夹
+
+2. **构建安装**：
+   ```bash
+   npm install
+   npm run build
+   ```
+   然后按照开发者模式安装步骤操作
+
+### 旧版本（Chrome < 88）
+
+- [Chrome 应用商店](https://chrome.google.com/webstore/detail/awesome-host-manager/pikaoeecieigblebdddckmlegonlogha?hl=zh-CN)
+- [下载 .crx 文件](https://raw.githubusercontent.com/keelii/awesome-host-manager/master/awesome-host-manager.crx)
+
+详细安装说明请查看 [INSTALL.md](./INSTALL.md)
 
 
 ## Host proxy

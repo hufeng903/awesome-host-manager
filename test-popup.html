@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Popup Test</title>
+    <style>
+      body {
+        width: 560px;
+        height: 400px;
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      .test-container {
+        border: 2px solid #ccc;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h2>🔧 弹出窗口测试</h2>
+
+      <div id="status" class="status info">正在检查文件...</div>
+
+      <div id="results"></div>
+
+      <button onclick="runTests()" style="margin-top: 20px; padding: 10px 20px">
+        重新运行测试
+      </button>
+    </div>
+
+    <script>
+      function updateStatus(message, type = "info") {
+        const statusEl = document.getElementById("status");
+        statusEl.textContent = message;
+        statusEl.className = `status ${type}`;
+      }
+
+      function addResult(message, type = "info") {
+        const resultsEl = document.getElementById("results");
+        const div = document.createElement("div");
+        div.className = `status ${type}`;
+        div.textContent = message;
+        resultsEl.appendChild(div);
+      }
+
+      function checkFile(url) {
+        return new Promise((resolve) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("GET", url, true);
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              resolve({
+                exists: xhr.status === 200,
+                status: xhr.status,
+                size: xhr.responseText.length,
+              });
+            }
+          };
+          xhr.onerror = () => resolve({ exists: false, status: 0, size: 0 });
+          xhr.send();
+        });
+      }
+
+      async function runTests() {
+        updateStatus("正在运行测试...", "info");
+        document.getElementById("results").innerHTML = "";
+
+        // 测试 1: 检查 CSS 文件
+        addResult("📋 测试 1: 检查 CSS 文件", "info");
+        const bulmaResult = await checkFile("bulma.min.css");
+        if (bulmaResult.exists) {
+          addResult(
+            `✅ bulma.min.css 存在 (${bulmaResult.size} 字节)`,
+            "success"
+          );
+        } else {
+          addResult(
+            `❌ bulma.min.css 不存在 (状态: ${bulmaResult.status})`,
+            "error"
+          );
+        }
+
+        const fontAwesomeResult = await checkFile(
+          "font-awesome/css/font-awesome.min.css"
+        );
+        if (fontAwesomeResult.exists) {
+          addResult(
+            `✅ font-awesome.min.css 存在 (${fontAwesomeResult.size} 字节)`,
+            "success"
+          );
+        } else {
+          addResult(
+            `❌ font-awesome.min.css 不存在 (状态: ${fontAwesomeResult.status})`,
+            "error"
+          );
+        }
+
+        // 测试 2: 检查 JavaScript 文件
+        addResult("📋 测试 2: 检查 JavaScript 文件", "info");
+        const jsResult = await checkFile("static/js/main.6ab4a76d.js");
+        if (jsResult.exists) {
+          addResult(
+            `✅ main.6ab4a76d.js 存在 (${jsResult.size} 字节)`,
+            "success"
+          );
+        } else {
+          addResult(
+            `❌ main.6ab4a76d.js 不存在 (状态: ${jsResult.status})`,
+            "error"
+          );
+        }
+
+        // 测试 3: 检查图标文件
+        addResult("📋 测试 3: 检查图标文件", "info");
+        const iconResult = await checkFile("images/logo-16.png");
+        if (iconResult.exists) {
+          addResult(`✅ logo-16.png 存在 (${iconResult.size} 字节)`, "success");
+        } else {
+          addResult(
+            `❌ logo-16.png 不存在 (状态: ${iconResult.status})`,
+            "error"
+          );
+        }
+
+        // 测试 4: 检查 Chrome API
+        addResult("📋 测试 4: 检查 Chrome API", "info");
+        if (typeof chrome !== "undefined") {
+          addResult("✅ Chrome API 可用", "success");
+          if (typeof chrome.proxy !== "undefined") {
+            addResult("✅ Chrome Proxy API 可用", "success");
+          } else {
+            addResult("❌ Chrome Proxy API 不可用", "error");
+          }
+          if (typeof chrome.storage !== "undefined") {
+            addResult("✅ Chrome Storage API 可用", "success");
+          } else {
+            addResult("❌ Chrome Storage API 不可用", "error");
+          }
+        } else {
+          addResult("❌ Chrome API 不可用", "error");
+        }
+
+        // 测试 5: 检查 DOM 元素
+        addResult("📋 测试 5: 检查 DOM 元素", "info");
+        const rootEl = document.getElementById("root");
+        if (rootEl) {
+          addResult("✅ root 元素存在", "success");
+        } else {
+          addResult("❌ root 元素不存在", "error");
+        }
+
+        updateStatus("测试完成！", "success");
+      }
+
+      // 页面加载时自动运行测试
+      window.onload = runTests;
+    </script>
+  </body>
+</html>
