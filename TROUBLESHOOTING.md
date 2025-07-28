@@ -1,141 +1,103 @@
 # 故障排除指南
 
-## Manifest 文件问题解决方案
+## Service Worker 注册错误
 
-### 问题：Manifest file is missing or unreadable
+### 错误信息
 
-如果遇到这个错误，请按以下步骤解决：
-
-#### 1. 验证文件完整性
-
-运行测试脚本：
-
-```bash
-node test-manifest.js
+```
+Error during service worker registration: TypeError: Failed to register a ServiceWorker for scope ('chrome-extension://...') with script ('chrome-extension://.../service-worker.js'): An unknown error occurred when fetching the script.
 ```
 
-确保所有检查都通过。
+### 问题原因
 
-#### 2. 清除 Chrome 缓存
+在 Chrome 扩展的 Manifest V3 中，必须包含一个 Service Worker 文件。如果缺少这个文件，Chrome 将无法加载扩展。
+
+### 解决方案
+
+#### 1. 自动构建（推荐）
+
+运行构建脚本：
+
+```bash
+./build-extension.sh
+```
+
+#### 2. 手动构建
+
+```bash
+# 清理之前的构建
+rm -rf build awesome-host-manager
+
+# 运行测试
+npm test -- --watchAll=false
+
+# 构建应用
+npm run build
+
+# 重命名构建目录
+mv build awesome-host-manager
+
+# 复制 Service Worker 文件
+cp public/service-worker.js awesome-host-manager/
+```
+
+#### 3. 验证构建结果
+
+```bash
+node test-extension.js
+```
+
+### 必需文件检查
+
+确保 `awesome-host-manager` 目录包含以下文件：
+
+- ✅ `manifest.json` - 扩展配置文件
+- ✅ `service-worker.js` - Service Worker 文件（必需）
+- ✅ `index.html` - 弹出窗口页面
+- ✅ `options.html` - 选项页面
+- ✅ `options.js` - 选项页面脚本
+- ✅ `images/` - 图标目录
+- ✅ `static/` - 静态资源目录
+- ✅ `font-awesome/` - 字体图标目录
+
+### 安装扩展
 
 1. 打开 Chrome 浏览器
 2. 访问 `chrome://extensions/`
-3. 找到已安装的扩展
-4. 点击"移除"按钮
-5. 重新加载扩展
+3. 开启"开发者模式"
+4. 点击"加载已解压的扩展程序"
+5. 选择 `awesome-host-manager` 目录
 
-#### 3. 检查文件权限
+### 常见问题
 
-确保文件有正确的读取权限：
+#### Q: 为什么需要 Service Worker？
 
-```bash
-ls -la awesome-host-manager/manifest.json
-```
+A: Chrome 扩展的 Manifest V3 要求使用 Service Worker 替代 Manifest V2 中的 background script。Service Worker 提供了更好的性能和安全性。
 
-#### 4. 重新构建项目
+#### Q: 构建后仍然出现错误怎么办？
 
-如果问题持续存在，重新构建项目：
+A: 确保：
 
-```bash
-npm run build
-```
+1. 清理了之前的构建文件
+2. Service Worker 文件被正确复制
+3. manifest.json 包含正确的 Service Worker 配置
 
-#### 5. 手动验证步骤
+#### Q: 如何调试 Service Worker？
 
-1. **检查文件编码**：
+A: 在 Chrome 扩展页面中点击"检查视图" > "Service Worker" 来查看 Service Worker 的控制台输出。
 
-   ```bash
-   file awesome-host-manager/manifest.json
-   ```
+### 技术细节
 
-   应该显示 "JSON data"
+#### Service Worker 功能
 
-2. **验证 JSON 格式**：
+- 处理扩展的后台逻辑
+- 管理缓存和网络请求
+- 处理来自弹出窗口和内容脚本的消息
+- 提供离线功能支持
 
-   ```bash
-   cat awesome-host-manager/manifest.json | python -m json.tool
-   ```
+#### Manifest V3 要求
 
-3. **检查文件大小**：
-   ```bash
-   wc -c awesome-host-manager/manifest.json
-   ```
-   应该约为 558 字节
-
-### 常见问题及解决方案
-
-#### 问题 1：Chrome 版本过低
-
-- **症状**：扩展无法加载，控制台显示版本错误
-- **解决**：确保 Chrome 版本 >= 88
-
-#### 问题 2：权限不足
-
-- **症状**：扩展加载但功能不正常
-- **解决**：检查 manifest.json 中的权限设置
-
-#### 问题 3：文件路径错误
-
-- **症状**：图标或页面无法加载
-- **解决**：确保所有引用的文件都存在
-
-#### 问题 4：JSON 格式错误
-
-- **症状**：Manifest 解析失败
-- **解决**：使用 JSON 验证工具检查格式
-
-### 调试技巧
-
-#### 1. 使用 Chrome 开发者工具
-
-1. 打开 `chrome://extensions/`
-2. 开启开发者模式
-3. 点击扩展的"检查视图"
-4. 查看控制台错误信息
-
-#### 2. 逐步测试
-
-1. 先使用简化版 manifest.json 测试
-2. 逐步添加功能
-3. 每次修改后重新加载扩展
-
-#### 3. 检查网络请求
-
-1. 打开开发者工具
-2. 查看 Network 标签
-3. 检查是否有 404 错误
-
-### 预防措施
-
-1. **定期备份**：保存工作版本的 manifest.json
-2. **版本控制**：使用 Git 管理代码
-3. **测试环境**：在开发环境中充分测试
-4. **文档记录**：记录所有修改和配置
-
-### 联系支持
-
-如果问题仍然存在：
-
-1. 检查 Chrome 版本
-2. 查看控制台错误信息
-3. 提供详细的错误日志
-4. 描述复现步骤
-
-## 成功安装后的验证
-
-安装成功后，可以通过以下方式验证：
-
-1. **基本功能测试**：
-
-   - 点击扩展图标
-   - 检查弹出窗口是否正常显示
-
-2. **权限测试**：
-
-   - 运行 `test-extension.js` 脚本
-   - 检查所有 API 是否可用
-
-3. **功能测试**：
-   - 创建 host 分组
-   - 添加 host 规则
-   - 测试代理功能
+- `manifest_version: 3`
+- `background.service_worker` 字段
+- 适当的权限配置
+- 兼容的 API 使用

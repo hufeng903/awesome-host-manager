@@ -14,6 +14,9 @@
     "default_title": "Awesome Host Manager",
     "default_popup": "index.html"
   },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
   "options_page": "options.html",
   "permissions": ["proxy", "storage"],
   "host_permissions": ["http://*/*", "https://*/*", "<all_urls>"]
